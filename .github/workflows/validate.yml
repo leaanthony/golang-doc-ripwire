@@ -1,0 +1,22 @@
+name: Validate skill fixtures
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: evals/fixtures/doc-audit/go.mod
+          cache: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python3 scripts/check_fixtures.py

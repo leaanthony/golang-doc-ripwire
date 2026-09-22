@@ -1,6 +1,6 @@
 # Application Documentation
 
-→ See `samber/cc-skills-golang@golang-cli` skill for CLI application patterns and frameworks.
+Optional companion, if installed: `samber/cc-skills-golang@golang-cli` skill for CLI application patterns and frameworks.
 
 ## Table of Contents
 
@@ -47,7 +47,7 @@ Environment variables:
 
 ## Configuration Documentation
 
-Configuration SHOULD be documented. Document all configuration sources in the README or a dedicated `docs/configuration.md`:
+Trace declarations and loading order before documenting configuration. Defaults and precedence below are illustrative; verify the real values using source and tests. See [Ripwire evidence recipes](ripwire.md). Configuration SHOULD be documented. Document all configuration sources in the README or a dedicated `docs/configuration.md`:
 
 ````markdown
 ## Configuration
@@ -88,7 +88,7 @@ logging:
 
 ## Architecture & design decisions
 
-For complex applications, document architectural decisions in `docs/architecture/`:
+Retrieve existing design decisions and verify entry points/flows before writing. A call graph does not establish rationale, runtime order, or shipped status. For complex applications, document architectural decisions in `docs/architecture/`:
 
 ```
 docs/
@@ -124,7 +124,7 @@ We use PostgreSQL because...
 
 ### REST APIs — OpenAPI / Swagger
 
-Use [swaggo/swag](https://github.com/swaggo/swag) to auto-generate OpenAPI docs from Go annotations:
+Use the existing API generator and verify its configured specification version. For projects already using [swaggo/swag](https://github.com/swaggo/swag), annotations can generate Swagger/OpenAPI documentation; do not assume OpenAPI 3 support from the tool name alone:
 
 ```go
 // @Summary Get user by ID
@@ -140,7 +140,7 @@ Use [swaggo/swag](https://github.com/swaggo/swag) to auto-generate OpenAPI docs 
 func GetUser(w http.ResponseWriter, r *http.Request) {
 ```
 
-Generate the spec:
+Use the repository’s pinned generator and existing command. The following is an illustrative setup for a project adopting swag; do not add dependencies just to edit documentation:
 
 ```bash
 go get -tool github.com/swaggo/swag/cmd/swag@latest
@@ -213,7 +213,7 @@ For REST+gRPC, use [grpc-gateway](https://github.com/grpc-ecosystem/grpc-gateway
 
 | API Style | Format | Auto-generation |
 | --- | --- | --- |
-| REST/HTTP with Go handlers | OpenAPI 3.x | swaggo/swag from annotations |
+| REST/HTTP with Go handlers | Configured Swagger/OpenAPI version | Existing annotation/schema generator |
 | REST/HTTP with framework | OpenAPI 3.x | Framework-specific (e.g., huma) |
 | gRPC services | Protobuf | Proto files are the source of truth |
 | gRPC + REST gateway | Protobuf + OpenAPI | grpc-gateway generates OpenAPI |

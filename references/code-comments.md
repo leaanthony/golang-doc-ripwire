@@ -1,6 +1,6 @@
 # Code Comments
 
-→ See `samber/cc-skills-golang@golang-naming` skill for naming conventions that reduce the need for comments.
+Optional companion, if installed: `samber/cc-skills-golang@golang-naming` skill for naming conventions that reduce the need for comments.
 
 ## Table of Contents
 
@@ -56,7 +56,7 @@ func GetUser(id string) (*User, error) {
 
 | Anti-pattern | Example | Fix |
 | --- | --- | --- |
-| Pure paraphrase | `// GetUser gets a user` on `func GetUser()` — starts with the name (required by godoc) but adds nothing | After the name, add _when_ to use it, constraints, and what can go wrong |
+| Pure paraphrase | `// GetUser gets a user` on `func GetUser()` — starts with the name (Go convention) but adds nothing | After the name, add _when_ to use it, constraints, and what can go wrong |
 | Signature restatement | `// Returns a string and an error` | Document _which_ error and _why_ — the signature already shows types |
 | Marketing vocabulary | `seamlessly`, `powerful`, `robust`, `enterprise-grade` | Remove — state facts instead |
 | Invented rationale | `// designed to improve scalability` | Only document what the code actually does |
@@ -65,7 +65,7 @@ func GetUser(id string) (*User, error) {
 
 ### Format
 
-Every doc comment MUST start with the function/method name followed by a verb phrase. This is how godoc renders it in package indexes.
+Start function and method comments with a complete sentence naming the symbol. This is a writing convention, not a prerequisite for godoc to render a comment.
 
 ```go
 // FuncName verb-phrase describing what it does.
@@ -73,7 +73,7 @@ Every doc comment MUST start with the function/method name followed by a verb ph
 
 ### Full Comment Template
 
-Use this structure for exported functions and complex internal functions. Omit sections that don't apply (e.g., no Parameters section for zero-arg functions). Focus on the "why" — don't restate what the code already makes obvious:
+The following illustrates possible content, not mandatory sections. Prefer ordinary concise prose; add parameter constraints, errors, and examples only when callers need them. Support each claim with source, tests, or an intended contract; never copy illustrative guarantees into real documentation without checking them. See [Ripwire evidence recipes](ripwire.md#ground-a-comment-or-package-explanation).
 
 ```go
 // FuncName summarizes what this function does in one sentence.
@@ -113,14 +113,14 @@ func FuncName(paramName Type, anotherParam Type) (ResultType, error) {
 | Exported constants and variables | Always |
 | Complex internal functions | Yes — algorithms, non-obvious logic |
 | Simple internal helpers | Optional — only if the name isn't self-explanatory |
-| Test functions | No |
+| Test functions | Usually no boilerplate; explain unusual setup or follow an explicit request |
 | Getters/setters with no logic | Brief one-liner is enough |
 
 `TODO` comments SHOULD include a tracking issue reference when one exists (e.g., `// TODO(#123): ...`). For informal notes, `// TODO(username): ...` or plain `// TODO: ...` is acceptable.
 
 ### Error Cases and Limitations
 
-Document every error a function can return, and any edge cases or limitations:
+Document error behavior callers can rely on and relevant edge cases or limitations. Distinguish stable error contracts from incidental dependency errors; verify wrapping and conditions in source and tests:
 
 ```go
 // Parse parses a duration string such as "300ms", "1.5h", or "2h45m".
@@ -151,7 +151,7 @@ func OldFunc() {}
 
 ### Interface Documentation
 
-Document the interface itself and each method. Explain the contract that implementations must satisfy:
+Document the interface itself and each method. Explain the intended contract that implementations must satisfy, and check relevant implementations for contradictions. Ripwire does not establish Go method sets or complete implementation coverage; use declarations and Go type checking. The following contract is illustrative:
 
 ```go
 // Store defines a persistent key-value storage backend.
@@ -209,7 +209,7 @@ func Transform[T any, U any](slice []T, fn func(T) U) []U {
 
 ### Playground Links
 
-Add a `Play:` line linking to a runnable Go Playground example of a public library. Use a Go Playground integration to create and share playground URLs when one is available:
+For an authorized public demo, a `Play:` line can link to a real, verified Go Playground URL. Never publish private code or invent a URL. The URL below is an illustrative placeholder:
 
 ```go
 // Map applies a function to each element of a slice.
@@ -229,7 +229,7 @@ func Map[T any, U any](s []T, fn func(T) U) []U {
 
 ### Package Comment
 
-Every package should have a doc comment. Place it in one of these locations:
+Every package should have a doc comment. Importable package comments conventionally begin with `Package name`; command package comments describe the program and conventionally begin with its name. Place the comment in one source file:
 
 1. **At the top of the main `.go` file** — for small packages with one or two files
 2. **In a dedicated `doc.go` file** — for packages with many files
@@ -243,7 +243,7 @@ Every package should have a doc comment. Place it in one of these locations:
 package httputil
 ```
 
-Use `doc.go` when the package has 3+ files or the package comment is longer than ~10 lines:
+Consider `doc.go` when the package overview needs a stable home; package size alone is not a rule. For example:
 
 ```go
 // Package auth implements authentication and authorization for the API server.

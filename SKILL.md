@@ -1,245 +1,114 @@
 ---
-name: golang-documentation
-description: "Comprehensive documentation guide for Golang projects, covering godoc comments, README, CONTRIBUTING, CHANGELOG, Go Playground, Example tests, API docs, and llms.txt. Use when writing or reviewing doc comments, documentation, adding code examples, setting up doc sites, or discussing documentation best practices. Triggers for both libraries and applications/CLIs."
-user-invocable: true
+name: golang-doc-ripwire
+description: Write and review Go documentation grounded in source code, actual usage, and executable examples. Use for Go doc comments, package docs, README, CONTRIBUTING, changelogs, configuration and API docs, or documentation drift audits. Uses Ripwire when available, with Go tooling and focused source reads as a fallback.
 license: MIT
-compatibility: Designed for Claude Code, Codex or similar harness, and for projects using Golang.
 metadata:
-  author: samber
-  version: "1.3.2"
-  openclaw:
-    emoji: "📝"
-    homepage: https://github.com/samber/cc-skills-golang
-    requires:
-      bins:
-        - go
-    install: []
-allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent WebFetch
-paths:
-  - "**/*.go"
+  author: leaanthony
+  version: "0.1.0"
+  upstream: samber/cc-skills-golang@golang-documentation
+  upstream-version: "1.3.2"
+  homepage: https://github.com/leaanthony/golang-doc-ripwire
+allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(gofmt:*) Bash(golangci-lint:*) Bash(git:*) Bash(ripwire:*) Bash(rg:*) Agent WebFetch
 ---
 
-**Persona:** You are a Go technical writer and API designer. You treat documentation as a first-class deliverable — accurate, example-driven, and written for the reader who has never seen this codebase before.
+# Go Documentation with Ripwire
 
-**Orchestration mode:** Fan out the sub-agents described in the "Parallelizing Documentation Work" section (one per package, or one per doc layer/file) for documenting or auditing documentation across a large codebase, and merge their output into the final docs. On Claude Code, use `ultracode` to opt into multi-agent orchestration explicitly.
+Write documentation for readers who have not seen the code. Establish the relevant facts before describing them, and verify examples with Go tooling.
 
-**Modes:**
+## Scope and modes
 
-- **Write mode** — generating or filling in missing documentation (doc comments, README, CONTRIBUTING, CHANGELOG, llms.txt). Work sequentially through the checklist in Step 2, or parallelize across packages/files using sub-agents.
-- **Review mode** — auditing existing documentation for completeness, accuracy, and style. Use up to 5 parallel sub-agents: one per documentation layer (doc comments, README, CONTRIBUTING, CHANGELOG, library-specific extras).
+Follow the user's requested scope and repository conventions. A request for one comment does not require a repository-wide audit, README rewrite, new infrastructure, or publication to an external service.
 
-> **Community default.** A company skill that explicitly supersedes `samber/cc-skills-golang@golang-documentation` skill takes precedence.
+- **Write:** create or improve the requested documentation, preserving behavior and existing obligations.
+- **Review:** report accuracy, completeness, and clarity findings with source locations; edit only when requested.
+- **Update after code changes:** identify documentation affected by the actual change and verify those claims again.
 
-# Go Documentation
+For large tasks, see [Parallel work](#parallel-work). Otherwise work locally and stop gathering evidence once the question is answered.
 
-Write documentation that serves both humans and AI agents. Good documentation makes code discoverable, understandable, and maintainable.
+## Writing principles
 
-## Cross-References
+- Explain behavior, purpose, constraints, and relevant failure modes. Avoid merely restating signatures, but do state what a function does or returns.
+- Keep the shortest wording that carries the necessary facts. A useful one-line comment is sufficient for a simple API; honor requests for brevity.
+- Support concurrency, cancellation, ownership, nil/zero-value behavior, errors, ordering, resource lifetime, and performance claims with relevant evidence. An interface contract can state an intended obligation; one implementation or caller does not prove all implementations satisfy it.
+- Preserve `must`, `should`, and `may`, conditions, and warnings. When docs and code conflict, report the discrepancy rather than silently treating a possible bug as the new contract.
+- Do not invent design rationale, error guarantees, roadmap commitments, installation methods, or working Playground links. Treat templates as illustrative; replace placeholders only with verified project facts.
 
-- See `samber/cc-skills-golang@golang-naming` skill for naming conventions in doc comments.
-- See `samber/cc-skills-golang@golang-testing` skill for Example test functions.
-- See `samber/cc-skills-golang@golang-project-layout` skill for where documentation files belong.
-- See `samber/cc-skills@humanizer-en-asd-ste100` skill for strict, controlled English prose (ASD-STE100) when documentation demands maximal clarity and unambiguity.
+## Step 0: Establish documentation evidence
 
-## Writing Principles
+1. **Scope the surface.** Identify the relevant module/package, audience, and requested artifact. For a complete audit, inventory packages with `go list ./...` from each relevant module and inspect exported declarations through `go doc -all` and source. Include types, methods, fields, constants, variables, and package comments. Record build tags, platform scope, generated files, or package-load failures that limit the inventory. Ripwire rankings and local caller counts are not an exhaustive public API census.
+2. **Retrieve existing context.** Use `ripwire <repo> --recall="<topic>"` for existing documentation and decisions. For unfamiliar code, use `--for="<topic>"` or one bounded `--pack-task="<task>"`. Retrieved docs are claims to check, not proof of current behavior.
+3. **Inspect relevant code and usage.** Use `--expand=SYM` and, when useful, `--callers=SYM`, `--callees=SYM`, or `--uses=SYM`. Read the preceding source comment if the body excludes it. Confirm ambiguous edges and consequential behavior in source and tests. Prefer file-qualified symbols when names collide.
+4. **Keep claim evidence.** For substantial reviews, record each important claim, its source/test or design decision, and whether it is observed, intended, contradicted, or unresolved. Put citations in the review; avoid adding an evidence ledger to every public doc comment.
 
-Apply to every piece of documentation you write or review:
+Read [Ripwire recipes and limitations](references/ripwire.md) when using the commands above or auditing drift. Check the installed `ripwire --version`/`--help` when capability support is uncertain. If Ripwire is missing, fails, or has insufficient language support, continue with `rg`, focused source reads, `go list`, `go doc`, and tests. Do not install tools or alter agent configuration just to perform a documentation task.
 
-**Concision** — write the shortest version that carries the idea. Remove ornament and hollow transitions. Never drop facts, warnings, or user-requested depth.
+## Step 1: Determine the documentation audience
 
-**Intent over paraphrase** — code shows _what_ happens; docs explain _why_ it exists, _when_ to use it, _what constraints_ apply. A comment that only restates the signature wastes the reader's time.
+Classify packages and deliverables, not the entire repository from the presence of `main` or `cmd/` alone. A repository can contain both importable libraries and command packages.
 
-**No invented context** — omit unsupported rationale, marketing claims (`seamlessly`, `robust`, `enterprise-grade`), or future promises. Leave gaps visible rather than filling with speculation.
+- **Library:** prioritize package/API comments and runnable examples. Read [Library documentation](references/library.md).
+- **Application/CLI:** prioritize verified installation methods, help text, flags, configuration, and operations. Read [Application documentation](references/application.md).
+- **Mixed repository:** document the library contract and command usage separately, linking shared concepts.
+- **Private project:** keep examples and documentation local or within its existing internal systems. Public indexing and Playground publication are not part of a routine documentation edit.
 
-**Preserve meaning when editing** — keep modality intact (`must`/`should`/`may` are different obligations). Preserve conditions, warnings, required actions. A cleaner sentence that changes obligations is wrong.
+## Step 2: Select the relevant deliverables
 
-**Anti-patterns to remove on sight:** pure-paraphrase comments that start with the name but add nothing (godoc requires the name as prefix — what it forbids is stopping there), signature restatement, marketing vocabulary, groundless future claims (`future extensibility`, `easy to scale`), hollow transitions (`it's worth noting that`, `in conclusion`), template padding that adds no information.
+Use this as an audit checklist within the agreed scope, not a mandate to create every file:
 
-For regulated or safety-critical documentation that requires strict controlled-English prose, → See `samber/cc-skills@humanizer-en-asd-ste100` skill.
+| Surface | What to verify |
+| --- | --- |
+| Exported API and package comments | Purpose, behavior, constraints, errors, useful zero values, and field meanings |
+| README / getting started | Project purpose, supported installation, minimal working usage, and valid links |
+| Working examples | Public API usage, deterministic output, real execution |
+| CONTRIBUTING | Actual prerequisites, build/test commands, contributor workflow |
+| CHANGELOG or releases | Notable user-visible changes supported by the release diff/history |
+| CLI/configuration docs | Actual flags, defaults, required values, and precedence |
+| Protocol/API docs | Agreement with handlers, schemas, protobuf, and configured generators |
+| Architecture docs | Verified entry points and flows; separately sourced design rationale |
+| llms.txt / documentation site | Useful navigation when requested or already part of the project |
+| License | Link to the existing license; flag its absence without choosing legal terms |
 
-## Step 1: Detect Project Type
+## Parallel work
 
-Before documenting, determine the project type — it changes what documentation is needed:
+When a large documentation task warrants delegation and agents are available, establish the package inventory and shared evidence once. `ripwire <repo> --pack-task="<task>" --partition=N` can supply shared context plus slices; inspect `overlap_max`, `split`, and the actual partition count before using them. Graph communities are not necessarily Go packages.
 
-**Library** — no `main` package, meant to be imported by other projects:
+Assign disjoint files/packages and explicit output ownership. One editor owns shared README/package summaries and reconciles terminology and contracts. Each worker returns changes or findings, supporting locations, checks run, and unresolved claims. Reduce the number of workers when the surface is tightly coupled; without delegation, use the same scopes sequentially.
 
-- Focus on godoc comments, `ExampleXxx` functions, playground demos, pkg.go.dev rendering
-- See [Library Documentation](./references/library.md)
+## Step 3: Write or review doc comments
 
-**Application/CLI** — has `main` package, `cmd/` directory, produces a binary or Docker image:
+Document exported functions, methods, types, interfaces, constants, variables, and meaningful exported fields. Add internal comments where reasoning or constraints are non-obvious. Ordinary test functions do not need boilerplate comments; explain unusual setup when useful or explicitly requested.
 
-- Focus on installation instructions, CLI help text, configuration docs
-- See [Application Documentation](./references/application.md)
+Start function/method comments with a complete sentence naming the symbol. Include only the details callers need to use it correctly; do not require Parameters, Returns, and Example sections on every function. The name-prefix convention supports clarity and search, not a rendering prerequisite.
 
-**Both apply**: function comments, README, CONTRIBUTING, CHANGELOG.
+Before asserting stronger guarantees, check the evidence from Step 0. For example, context acceptance alone does not prove cancellation, and a map-backed type is not automatically safe for concurrent mutation. For interfaces, inspect the declaration and relevant implementations using Go tooling; do not rely on Ripwire's `--lego` to establish Go method sets or implementation completeness.
 
-**Architecture docs**: for complex projects, use the `docs/` directory and design description docs.
+In review mode, `--comment-coherence` can prioritize comments that repeat names. It is a lexical heuristic, not a prose grade or missing-docs census. Never pad a concise correct comment to improve a score. Read [Code comments](references/code-comments.md) for formatting and examples, and [Ripwire review recipes](references/ripwire.md#review-comments-and-markdown) for interpreting findings.
 
-## Step 2: Documentation Checklist
+## Step 4: Project documentation
 
-Every Go project needs these (ordered by priority):
+Use the existing structure unless the user requests a redesign. For a new README, [the template](assets/templates/README.md) offers title, badges, summary, demo, getting started, features, contributing, contributors, and license sections. Omit empty sections and unsupported badges; a feature list should be as long as the actual product requires.
 
-| Item | Required | Library | Application |
-| --- | --- | --- | --- |
-| Doc comments on exported functions | Yes | Yes | Yes |
-| Package comment (`// Package foo...`) — MUST exist | Yes | Yes | Yes |
-| README.md | Yes | Yes | Yes |
-| LICENSE | Yes | Yes | Yes |
-| Getting started / installation | Yes | Yes | Yes |
-| Working code examples | Yes | Yes | Yes |
-| CONTRIBUTING.md | Recommended | Yes | Yes |
-| CHANGELOG.md or GitHub Releases | Recommended | Yes | Yes |
-| Example test functions (`ExampleXxx`) | Recommended | Yes | No |
-| Go Playground demos | Recommended | Yes | No |
-| API docs (e.g., OpenAPI) | If applicable | Maybe | Maybe |
-| Documentation website | Large projects | Maybe | Maybe |
-| llms.txt | Recommended | Yes | Yes |
+CONTRIBUTING should document the real setup and test workflow. If setup is cumbersome, identify the problem and suggest improvements rather than silently adding infrastructure. For changelogs, describe user-visible changes supported by history; use the project's release format or [the changelog template](assets/templates/CHANGELOG.md).
 
-A private project might not need a documentation website, llms.txt, Go Playground demos...
+Read [Project documentation](references/project-docs.md) for details. For architecture, combine a targeted `--report`, `--path`, or `--connect` with source reads; source design intent from decisions retrieved by `--recall`. Label inferred edges and unresolved behavior. Graph metrics alone cannot establish runtime order, performance, or delivery status.
 
-## Parallelizing Documentation Work
+## Step 5: Examples, applications, and APIs
 
-When documenting a large codebase with many packages, use up to 5 parallel sub-agents for independent tasks:
+- **Library examples:** inspect real callers and existing examples before adding `ExampleXxx` functions. Prefer a small set of useful public-API scenarios over repetitive examples for every symbol. Use deterministic `// Output:` or `// Unordered output:` when runtime verification is intended. Without one, an example compiles but does not execute. See [Library documentation](references/library.md).
+- **CLI/configuration:** trace flag/env/config declarations and loading order. Verify defaults and precedence against implementation, tests, or safe help invocations; do not copy the illustrative precedence in a template as fact. See [Application documentation](references/application.md).
+- **APIs:** use the existing schema/protobuf/annotation workflow. Inspect generator configuration before claiming a specification version or adding a tool. Document supported behavior and error responses.
+- **AI navigation:** when requested, use [llms.txt](assets/templates/llms.txt) to link maintained docs. Verify its paths and claims; Ripwire's Markdown drift pass does not establish that a `.txt` file or its links are valid.
 
-- Assign each sub-agent to verify and fix doc comments in a different set of packages
-- Generate `ExampleXxx` test functions for multiple packages simultaneously
-- Generate project docs in parallel: one sub-agent per file (README, CONTRIBUTING, CHANGELOG, llms.txt)
+## Step 6: Verify and deliver
 
-## Step 3: Function & Method Doc Comments
+1. Review the diff and links, then preview affected package/symbol documentation with `go doc`. Formatting and semantic claims still need inspection; `go doc` alone is not a completeness gate.
+2. When Go files change, format the changed files with `gofmt`. Run new/changed examples in the affected packages with `go test -v -run '^Example' -count=1 <packages>` and confirm their names actually execute. A successful exit with no examples run is not runtime verification. Compile-only examples are acceptable when intentional and reported as such.
+3. For Markdown changes or a code-driven docs update, run a scoped `--doc-drift` and inspect the findings and unchecked counts. Use `--mentions=SYM` for changed symbols plus a text search for other references. Neither command checks arbitrary prose or fenced code. Recheck snippets against source and execute runnable examples separately.
+4. When executable code changes, run appropriate Go tests and repository-required checks. Ripwire's `--affected` helps select tests but does not run or prove discovery of them. Use code quality/contract checks when relevant; they are not documentation quality scores. Avoid expanding a prose-only change into a code refactor.
+5. Report the documentation changed or findings found, checks actually performed, and unresolved claims or scope limits. Tie substantial audit evidence to the measured revision and dirty state. Never report “all docs verified” solely from a clean graph or drift result.
 
-Every exported function and method MUST have a doc comment. Document complex internal functions too. Skip test functions.
+## Sources and optional companion skills
 
-The comment starts with the function name and a verb phrase. Focus on **why** and **when**, not restating what the code already shows. The code tells you _what_ happens — the comment should explain _why_ it exists, _when_ to use it, _what constraints_ apply, and _what can go wrong_. Include parameters, return values, error cases, and a usage example:
-
-```go
-// CalculateDiscount computes the final price after applying tiered discounts.
-// Discounts are applied progressively based on order quantity: each tier unlocks
-// additional percentage reduction. Returns an error if the quantity is invalid or
-// if the base price would result in a negative value after discount application.
-//
-// Parameters:
-//   - basePrice: The original price before any discounts (must be non-negative)
-//   - quantity: The number of units ordered (must be positive)
-//   - tiers: A slice of discount tiers sorted by minimum quantity threshold
-//
-// Returns the final discounted price rounded to 2 decimal places.
-// Returns ErrInvalidPrice if basePrice is negative.
-// Returns ErrInvalidQuantity if quantity is zero or negative.
-//
-// Play: https://go.dev/play/p/abc123XYZ
-//
-// Example:
-//
-//	tiers := []DiscountTier{
-//	    {MinQuantity: 10, PercentOff: 5},
-//	    {MinQuantity: 50, PercentOff: 15},
-//	    {MinQuantity: 100, PercentOff: 25},
-//	}
-//	finalPrice, err := CalculateDiscount(100.00, 75, tiers)
-//	if err != nil {
-//	    log.Fatalf("Discount calculation failed: %v", err)
-//	}
-//	log.Printf("Ordered 75 units at $100 each: final price = $%.2f", finalPrice)
-func CalculateDiscount(basePrice float64, quantity int, tiers []DiscountTier) (float64, error) {
-    // implementation
-}
-```
-
-For the full comment format, deprecated markers, interface docs, and file-level comments, see **[Code Comments](./references/code-comments.md)** — how to document packages, functions, interfaces, and when to use `Deprecated:` markers and `BUG:` notes.
-
-## Step 4: README Structure
-
-README SHOULD follow this exact section order. Copy the template from [templates/README.md](./assets/templates/README.md):
-
-1. **Title** — project name as `# heading`
-2. **Badges** — shields.io pictograms (Go version, license, CI, coverage, Go Report Card...)
-3. **Summary** — 1-2 sentences explaining what the project does
-4. **Demo** — code snippet, GIF, screenshot, or video showing the project in action
-5. **Getting Started** — installation + minimal working example
-6. **Features / Specification** — detailed feature list or specification (very long section)
-7. **Contributing** — link to CONTRIBUTING.md or inline if very short
-8. **Contributors** — thank contributors (badge or list)
-9. **License** — license name + link
-
-Common badges for Go projects:
-
-```markdown
-[![Go Version](https://img.shields.io/github/go-mod/go-version/{owner}/{repo})](https://go.dev/) [![License](https://img.shields.io/github/license/{owner}/{repo})](./LICENSE) [![Build Status](https://img.shields.io/github/actions/workflow/status/{owner}/{repo}/test.yml?branch=main)](https://github.com/{owner}/{repo}/actions) [![Coverage](https://img.shields.io/codecov/c/github/{owner}/{repo})](https://codecov.io/gh/{owner}/{repo}) [![Go Report Card](https://goreportcard.com/badge/github.com/{owner}/{repo})](https://goreportcard.com/report/github.com/{owner}/{repo}) [![Go Reference](https://pkg.go.dev/badge/github.com/{owner}/{repo}.svg)](https://pkg.go.dev/github.com/{owner}/{repo})
-```
-
-For the full README guidance and application-specific sections, see [Project Docs](./references/project-docs.md#readme).
-
-## Step 5: CONTRIBUTING & Changelog
-
-**CONTRIBUTING.md** — Help contributors get started in under 10 minutes, covering prerequisites, clone, build, test, and PR process. If setup takes longer, improve the process with a Makefile, docker-compose, or devcontainer. See [Project Docs](./references/project-docs.md#contributingmd).
-
-**Changelog** — Track changes using [Keep a Changelog](https://keepachangelog.com/) format or GitHub Releases, copying the template from [templates/CHANGELOG.md](./assets/templates/CHANGELOG.md). Write each entry to answer _what changed for the reader_ — internal refactors without user-visible impact belong in commit history, and a fixed edge case never becomes a broad "reliability improvement" claim. See [Project Docs](./references/project-docs.md#changelog).
-
-## Step 6: Library-Specific Documentation
-
-For Go libraries, add these on top of the basics:
-
-- **Go Playground demos** — create runnable demos and link them in doc comments with `// Play: https://go.dev/play/p/xxx`. Use a Go Playground integration when one is available to create and share playground URLs.
-- **Example test functions** — write `func ExampleXxx()` in `_test.go` files. These are executable documentation verified by `go test`.
-- **Generous code examples** — include multiple examples in doc comments showing common use cases.
-- **godoc** — your doc comments render on [pkg.go.dev](https://pkg.go.dev). Use `go doc` locally to preview; to inspect how a published package renders its docs, symbols, and examples, → See `samber/cc-skills-golang@golang-pkg-go-dev` skill.
-- **Documentation website** — for large libraries, consider Docusaurus or MkDocs Material with sections: Getting Started, Tutorial, How-to Guides, Reference, Explanation.
-- **Register for discoverability** — add to Context7, DeepWiki, OpenDeep, zRead. Even for private libraries.
-
-See [Library Documentation](./references/library.md) for details.
-
-## Step 7: Application-Specific Documentation
-
-For Go applications/CLIs:
-
-- **Installation methods** — pre-built binaries (GoReleaser), `go install`, Docker images, Homebrew...
-- **CLI help text** — make `--help` comprehensive; it's the primary documentation
-- **Configuration docs** — document all env vars, config files, CLI flags
-
-See [Application Documentation](./references/application.md) for details.
-
-## Step 8: API Documentation
-
-If your project exposes an API:
-
-| API Style    | Format      | Tool                                         |
-| ------------ | ----------- | -------------------------------------------- |
-| REST/HTTP    | OpenAPI 3.x | swaggo/swag (auto-generate from annotations) |
-| Event-driven | AsyncAPI    | Manual or code-gen                           |
-| gRPC         | Protobuf    | buf, grpc-gateway                            |
-
-Prefer auto-generation from code annotations when possible. See [Application Documentation](./references/application.md#api-documentation) for details.
-
-## Step 9: AI-Friendly Documentation
-
-Make your project consumable by AI agents:
-
-- **llms.txt** — add a `llms.txt` file at the repository root. Copy the template from [templates/llms.txt](./assets/templates/llms.txt). This file gives LLMs a structured overview of your project.
-- **Structured formats** — use OpenAPI, AsyncAPI, or protobuf for machine-readable API docs.
-- **Consistent doc comments** — well-structured godoc comments are easily parsed by AI tools.
-- **Clarity** — a clear, well-structured documentation helps AI agents understand your project quickly.
-
-## Step 10: Delivery Documentation
-
-Document how users get your project:
-
-**Libraries:**
-
-```bash
-go get github.com/{owner}/{repo}
-```
-
-**Applications:**
-
-```bash
-# Pre-built binary
-curl -sSL https://github.com/{owner}/{repo}/releases/latest/download/{repo}-$(uname -s)-$(uname -m) -o /usr/local/bin/{repo}
-
-# From source
-go install github.com/{owner}/{repo}@latest
-
-# Docker
-docker pull {registry}/{owner}/{repo}:latest
-```
-
-See [Project Docs](./references/project-docs.md#delivery) for Dockerfile best practices and Homebrew tap setup.
+- [Go doc comments](https://go.dev/doc/comment) and [Go examples](https://pkg.go.dev/testing#hdr-Examples) are authoritative for Go conventions.
+- If installed, Ripwire orient/navigate/fresh-eyes skills provide additional retrieval and review guidance; write-tests/change-check apply when executable examples or code change. This skill remains usable without them.
+- Derived from `samber/cc-skills-golang`'s `golang-documentation` 1.3.2; see [README](README.md) for provenance and [LICENSE](LICENSE).

@@ -1,6 +1,6 @@
 # Project Documentation
 
-→ See `samber/cc-skills-golang@golang-continuous-integration` skill for automating changelog generation and release workflows.
+Optional companion, if installed: `samber/cc-skills-golang@golang-continuous-integration` skill for automating changelog generation and release workflows.
 
 ## Table of Contents
 
@@ -17,18 +17,18 @@
 
 ## README.md
 
-A LICENSE file MUST exist in every project. The README is the project's front page — make it simple, clear, and scannable. A copy-paste template with empty sections is available at [templates/README.md](./templates/README.md).
+Link the existing license; flag its absence without selecting license terms for the user. The README is the project's front page — make it simple, clear, and scannable. A copy-paste template with empty sections is available at [templates/README.md](../assets/templates/README.md).
 
 ### Section Order
 
-Follow this exact order (all sections are in the template):
+For a new README, this is a suggested order. Preserve the project's existing structure and the user's preferences; omit empty sections and unverified badges:
 
 1. **Title** — project name as `# heading`
 2. **Badges** — shields.io pictograms (Go version, license, CI, coverage, Go Report Card)
 3. **Summary** — 1-2 sentences explaining what the project does
 4. **Demo** — code snippet (libraries), GIF/video (CLIs), or screenshot (web UIs)
 5. **Getting Started** — installation + minimal working example
-6. **Features / Specification** — the longest section, organized by feature area
+6. **Features / Specification** — verified capabilities, organized by feature area without padding
 7. **Contributing** — link to CONTRIBUTING.md or inline if very short
 8. **License** — license name + link
 
@@ -38,13 +38,13 @@ The template includes commented-out sections for applications (binary download t
 
 ## CONTRIBUTING.md
 
-The goal: a new contributor should be able to clone the repo, make a change, and run the tests **in under 10 minutes**. If your project takes longer, add tooling to fix that.
+The goal: a new contributor should be able to clone the repo, make a change, and run the tests **in under 10 minutes**. If setup takes longer, identify the friction and suggest tooling improvements; implement infrastructure only when it is within the requested scope.
 
-Copy the template from [templates/CONTRIBUTING.md](./templates/CONTRIBUTING.md).
+Copy the template from [templates/CONTRIBUTING.md](../assets/templates/CONTRIBUTING.md).
 
 ### The 10-Minute Rule
 
-If setup takes more than 10 minutes, add these improvements:
+If setup takes more than 10 minutes, consider these improvements. Document only commands that actually exist; proposed tools must be labeled as proposals:
 
 | Problem | Solution |
 | --- | --- |
@@ -58,7 +58,7 @@ If setup takes more than 10 minutes, add these improvements:
 
 ## Changelog
 
-CHANGELOG MUST be updated for every release, tracking the notable changes it contains. Use [Keep a Changelog](https://keepachangelog.com/) format. Copy the template from [templates/CHANGELOG.md](./templates/CHANGELOG.md).
+CHANGELOG MUST be updated for every release, tracking the notable changes it contains. Use [Keep a Changelog](https://keepachangelog.com/) format. Copy the template from [templates/CHANGELOG.md](../assets/templates/CHANGELOG.md).
 
 ### Format
 
@@ -101,20 +101,16 @@ For simpler projects, GitHub Releases can replace a CHANGELOG file. GoReleaser a
 
 ## Distribution
 
-**YOU MUST offer multiple installation paths** (binaries, containers, APT/Homebrew/... package managers, source). Because:
-
-- Each installation method eliminates friction for a different user segment
-- Users adopt tools that fit their workflow, not tools that force workflow changes
-- A single installation path is a hidden tax on adoption—DevOps engineers skip tools requiring npm, macOS developers skip tools without Homebrew
-- Tools users _want to_ use spread faster than tools users _have to_ accommodate
+Document installation paths the project actually supports. Additional binaries, containers, or package-manager distribution may be useful proposals, but do not claim they exist or implement them solely to fill a documentation template.
 
 ### Dockerfile Best Practices
 
-Use multi-stage builds with a minimal final image:
+For a project already using containers, document its actual build. This multi-stage example is illustrative; use the Go version and image pinned by the project rather than copying an unverified tag:
 
 ```dockerfile
 # Build stage
-FROM golang:1.27-alpine AS builder
+ARG GO_IMAGE
+FROM ${GO_IMAGE} AS builder
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download

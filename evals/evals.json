@@ -1,31 +1,31 @@
 {
-  "skill_name": "golang-documentation",
+  "skill_name": "golang-doc-ripwire",
   "evals": [
     {
       "id": 1,
       "name": "readme-section-order",
       "prompt": "Write a README.md for a Go library called `github.com/acme/taskflow` that provides a DAG-based task execution engine. It supports parallel execution, dependency resolution, cycle detection, and retry policies. Include installation instructions, a usage example, license info, and any other sections you think are appropriate for a Go open-source library.",
-      "trap": "Model will produce a reasonable README but likely not follow the exact section order: Title > Badges > Summary > Demo > Getting Started > Features > Contributing > License",
+      "trap": "A template can encourage invented badges, APIs, and padded sections.",
       "assertions": [
         {
           "id": "1.1",
-          "text": "Badges section appears immediately after the title heading, before any prose"
+          "text": "Creates a readable README with project purpose, getting started, usage, and relevant feature information."
         },
         {
           "id": "1.2",
-          "text": "A short summary (1-2 sentences) appears after badges, before any code block or Getting Started section"
+          "text": "Uses only supplied or verified API names and installation facts; labels unresolved example details."
         },
         {
           "id": "1.3",
-          "text": "A demo/example code snippet appears before the Getting Started/Installation section"
+          "text": "Omits unsupported badges and empty template sections."
         },
         {
           "id": "1.4",
-          "text": "Getting Started section with `go get` appears after the demo and before Features"
+          "text": "Uses a reasonable structure without padding Features merely to make it the longest section."
         },
         {
           "id": "1.5",
-          "text": "Features section is the longest section, appearing after Getting Started"
+          "text": "Preserves user-provided project facts and does not invent capabilities."
         }
       ]
     },
@@ -61,24 +61,27 @@
       "id": 3,
       "name": "doc-comment-why-not-what",
       "prompt": "Write a godoc comment for this Go function. Make it comprehensive:\n\n```go\nfunc Merge(dst, src map[string]interface{}, overwrite bool) map[string]interface{} {\n    if dst == nil {\n        dst = make(map[string]interface{})\n    }\n    for k, v := range src {\n        if _, exists := dst[k]; !exists || overwrite {\n            dst[k] = v\n        }\n    }\n    return dst\n}\n```",
-      "trap": "Model might just restate: 'Merge merges two maps'. Skill teaches why/when/constraints, Parameters section, Returns section, error cases",
+      "trap": "Formatting must not replace explanation of actual map mutation and nil behavior.",
       "assertions": [
         {
           "id": "3.1",
-          "text": "Comment starts with 'Merge' followed by a verb phrase (godoc convention)"
+          "text": "Starts the comment with Merge and describes copying entries into dst."
         },
         {
           "id": "3.2",
-          "text": "Includes a Parameters section listing dst, src, and overwrite with descriptions"
+          "text": "Explains that a non-nil dst is mutated and returned; no mandatory Parameters section."
         },
         {
           "id": "3.3",
-          "text": "Explains the overwrite behavior (when true vs false)"
+          "text": "Explains overwrite behavior for existing keys."
         },
-        { "id": "3.4", "text": "Documents nil dst handling (creates new map)" },
+        {
+          "id": "3.4",
+          "text": "Documents allocation when dst is nil and does not claim a deep copy."
+        },
         {
           "id": "3.5",
-          "text": "Includes an inline code Example section showing usage"
+          "text": "Does not invent errors, thread-safety guarantees, or design rationale."
         }
       ]
     },
@@ -86,27 +89,27 @@
       "id": 4,
       "name": "small-package-no-doc-go",
       "prompt": "I have a Go package with 2 files: `handler.go` and `middleware.go`. My teammate suggests I should create a `doc.go` file for the package-level documentation comment. Is that the right approach? Where should I put the package comment?",
-      "trap": "Model without skill might agree to create doc.go (it's a common pattern). Skill teaches: doc.go is for packages with 3+ files; for small packages, put the comment at the top of the main .go file",
+      "trap": "A package file-count heuristic should not become a rigid rule.",
       "assertions": [
         {
           "id": "4.1",
-          "text": "Advises AGAINST creating doc.go for a 2-file package"
+          "text": "Recognizes that a comment in an existing source file can document the two-file package."
         },
         {
           "id": "4.2",
-          "text": "Recommends placing the package comment at the top of the main .go file (handler.go)"
+          "text": "Explains when a dedicated doc.go would improve organization rather than insisting on a numerical threshold."
         },
         {
           "id": "4.3",
-          "text": "Mentions the 3+ files threshold for when doc.go becomes appropriate"
+          "text": "Keeps the package overview in one source file."
         },
         {
           "id": "4.4",
-          "text": "Shows the `// Package ... ` format starting with the Package keyword"
+          "text": "Shows the Package name convention for an importable package."
         },
         {
           "id": "4.5",
-          "text": "Explains that doc.go is for larger packages where no single file is the obvious home"
+          "text": "Does not add unnecessary files merely to follow a template."
         }
       ]
     },
@@ -130,7 +133,7 @@
         },
         {
           "id": "5.4",
-          "text": "Examples use fmt.Println to print results (not fmt.Printf)"
+          "text": "Examples print deterministic results using an appropriate fmt function."
         },
         {
           "id": "5.5",
@@ -142,27 +145,27 @@
       "id": 6,
       "name": "contributing-10min-rule",
       "prompt": "Write a CONTRIBUTING.md for a Go project that requires: PostgreSQL 15, Redis 7, Elasticsearch 8, Go 1.22+, and protoc for gRPC code generation. The test suite takes about 3 minutes to run. Building requires running `protoc` first, then `go generate`, then `go build`.",
-      "trap": "Complex setup with 5 dependencies. Model might just list prerequisites. Skill teaches the 10-minute rule and suggests Makefile, docker-compose, devcontainer",
+      "trap": "Writing CONTRIBUTING must not invent existing tooling or silently expand into infrastructure work.",
       "assertions": [
         {
           "id": "6.1",
-          "text": "Includes a Makefile or mentions make targets (make build, make test, make lint)"
+          "text": "Documents supplied prerequisites and separates verified commands from proposed tooling."
         },
         {
           "id": "6.2",
-          "text": "Includes docker-compose.yml for running PostgreSQL, Redis, and Elasticsearch locally"
+          "text": "Suggests a service orchestration option for the supplied dependencies when useful."
         },
         {
           "id": "6.3",
-          "text": "Provides a Quick Start section showing clone-to-running-tests in a few commands"
+          "text": "Provides a clear contributor workflow without falsely claiming a measured setup time."
         },
         {
           "id": "6.4",
-          "text": "Mentions or provides devcontainer configuration for consistent environments"
+          "text": "Does not create unrelated infrastructure solely to satisfy a documentation template."
         },
         {
           "id": "6.5",
-          "text": "Separates unit tests (fast, no deps) from integration tests (needs services)"
+          "text": "Distinguishes fast unit tests from service-dependent integration tests when supported by project facts."
         }
       ]
     },
@@ -218,7 +221,7 @@
         },
         {
           "id": "8.5",
-          "text": "Mentions registering for discoverability platforms (Context7, DeepWiki, or similar)"
+          "text": "Verifies or marks unresolved paths and symbols in llms.txt; does not treat a Markdown drift check as validation of this text file."
         }
       ]
     },
@@ -226,27 +229,27 @@
       "id": 9,
       "name": "brief-doc-comment-trap",
       "prompt": "Write a brief, one-line doc comment for this exported Go function. Keep it short — I don't want verbose documentation cluttering the code:\n\n```go\npackage retry\n\nfunc Do(ctx context.Context, maxAttempts int, delay time.Duration, backoff float64, fn func() error) error {\n    var lastErr error\n    for i := 0; i < maxAttempts; i++ {\n        if err := fn(); err != nil {\n            lastErr = err\n            select {\n            case <-ctx.Done():\n                return ctx.Err()\n            case <-time.After(delay):\n                delay = time.Duration(float64(delay) * backoff)\n            }\n            continue\n        }\n        return nil\n    }\n    return lastErr\n}\n```",
-      "trap": "User explicitly asks for 'brief, one-line'. Without skill, model complies and writes a minimal one-liner. With skill, the model should STILL write a comprehensive comment because the skill says every exported function MUST have a doc comment with Parameters, Returns, and Example sections",
+      "trap": "The original evaluation rewarded overriding an explicit one-line request. The derivative must honor brevity without inventing behavior.",
       "assertions": [
         {
           "id": "9.1",
-          "text": "Comment starts with 'Do' followed by a verb phrase (godoc convention)"
+          "text": "Provides a one-line doc comment beginning with Do."
         },
         {
           "id": "9.2",
-          "text": "Includes a Parameters section or describes each parameter (ctx, maxAttempts, delay, backoff, fn)"
+          "text": "Concisely describes retries up to maxAttempts or until success."
         },
         {
           "id": "9.3",
-          "text": "Documents the exponential backoff behavior (delay multiplied by backoff factor)"
+          "text": "Does not add mandatory Parameters, Returns, or Example sections."
         },
         {
           "id": "9.4",
-          "text": "Documents context cancellation behavior (returns ctx.Err())"
+          "text": "If cancellation is mentioned, does not claim it interrupts an in-flight fn invocation."
         },
         {
           "id": "9.5",
-          "text": "Includes an inline Example section showing a realistic usage pattern"
+          "text": "Does not claim maxAttempts is validated or that non-positive values cause an error."
         }
       ]
     },
@@ -254,27 +257,27 @@
       "id": 10,
       "name": "review-restating-comments",
       "prompt": "Review these doc comments. My team says our documentation is solid. Do you see any issues?\n\n```go\npackage cache\n\n// Get gets a value from the cache by key.\n// Returns the value and true if found, zero value and false if not.\nfunc (c *Cache) Get(key string) (interface{}, bool) { ... }\n\n// Set sets a value in the cache for the given key.\nfunc (c *Cache) Set(key string, value interface{}) { ... }\n\n// Delete deletes a value from the cache by key.\nfunc (c *Cache) Delete(key string) { ... }\n\n// Size returns the number of items currently in the cache.\nfunc (c *Cache) Size() int { ... }\n\n// Clear clears all items from the cache.\nfunc (c *Cache) Clear() { ... }\n```",
-      "trap": "Team says docs are 'solid', creating social pressure to agree. All comments describe what the code does but not why/when/constraints — they omit thread safety, TTL/eviction behavior, and cache miss semantics. The skill requires comments to explain WHY and WHEN, not just WHAT.",
+      "trap": "Bodies are unavailable; missing context must not be filled with fabricated guarantees.",
       "assertions": [
         {
           "id": "10.1",
-          "text": "Identifies that the comments describe WHAT the code does but fail to explain WHY, WHEN, or any constraints"
+          "text": "Identifies useful questions about Set replacement behavior and supported concurrency semantics."
         },
         {
           "id": "10.2",
-          "text": "Points out that Get is missing thread-safety documentation (is it safe for concurrent use?)"
+          "text": "Acknowledges Get already documents found/missing return behavior."
         },
         {
           "id": "10.3",
-          "text": "Points out that Set is missing documentation on what happens if the key already exists and whether there is a TTL or capacity limit"
+          "text": "Does not insist Size needs a longer comment without evidence that its meaning is incomplete."
         },
         {
           "id": "10.4",
-          "text": "Rewrites at least one comment to include constraints, edge cases, or concurrent-use guarantees"
+          "text": "Does not invent TTL, eviction, or concurrency guarantees for the omitted implementations."
         },
         {
           "id": "10.5",
-          "text": "Does NOT simply agree that the docs are solid without identifying the missing context"
+          "text": "Returns a review and distinguishes established facts from questions requiring source."
         }
       ]
     },
@@ -282,27 +285,27 @@
       "id": 11,
       "name": "skip-test-func-comments",
       "prompt": "I'm adding doc comments to every function in my Go project to reach 100% documentation coverage. Please add appropriate doc comments to these test functions:\n\n```go\npackage auth_test\n\nfunc TestValidateToken(t *testing.T) { ... }\nfunc TestValidateToken_expired(t *testing.T) { ... }\nfunc TestValidateToken_invalidSignature(t *testing.T) { ... }\nfunc BenchmarkValidateToken(b *testing.B) { ... }\nfunc TestHashPassword(t *testing.T) { ... }\nfunc TestComparePassword(t *testing.T) { ... }\n```",
-      "trap": "User explicitly asks to add doc comments to test functions citing '100% documentation coverage'. Without skill, model complies and writes comments for each test. The skill's 'What to Document' table explicitly says 'Test functions: No' and the model should push back on this request.",
+      "trap": "A general preference against boilerplate must not override an explicit request, and coverage tools differ.",
       "assertions": [
         {
           "id": "11.1",
-          "text": "Advises against or actively discourages adding doc comments to test functions"
+          "text": "Explains briefly that descriptive test names often make boilerplate unnecessary."
         },
         {
           "id": "11.2",
-          "text": "Explains that test function names are designed to be self-descriptive — the name IS the documentation"
+          "text": "Honors the explicit request with concise comments or useful proposed wording."
         },
         {
           "id": "11.3",
-          "text": "Does NOT produce doc comments for any of the standard Test/Benchmark functions listed"
+          "text": "Does not invent behavior hidden behind the omitted test bodies."
         },
         {
           "id": "11.4",
-          "text": "Clarifies that '100% documentation coverage' tools do not count unexported or test functions — this goal does not apply here"
+          "text": "Does not claim all documentation coverage tools universally exclude test functions."
         },
         {
           "id": "11.5",
-          "text": "May suggest that complex test setup helpers warrant comments, but not the standard TestXxx/BenchmarkXxx functions themselves"
+          "text": "Does not expand into unrelated test changes."
         }
       ]
     },
@@ -406,7 +409,7 @@
         },
         {
           "id": "15.3",
-          "text": "Recommends CLI --help text and multiple installation methods for the cmd/datactl binary (application part)"
+          "text": "Recommends CLI help and documentation of installation methods the command actually supports."
         },
         {
           "id": "15.4",
@@ -422,27 +425,27 @@
       "id": 16,
       "name": "existing-contributing-improve",
       "prompt": "Our Go project requires PostgreSQL and Redis. This is our current CONTRIBUTING.md. Improve it:\n\n```markdown\n# Contributing\n\n## Prerequisites\n- Go 1.22+\n- PostgreSQL 15\n- Redis 7\n\n## Setup\n1. Install Go from https://go.dev\n2. Install PostgreSQL from https://www.postgresql.org/download/\n3. Install Redis from https://redis.io/download/\n4. Create a database: `createdb myapp_test`\n5. Run `go build ./...`\n6. Run `go test ./...`\n\n## Pull Requests\nPlease open a PR against the main branch.\n```",
-      "trap": "The existing CONTRIBUTING requires manual installation of PostgreSQL and Redis — time-consuming and error-prone. Without skill, model might polish the text or add small improvements. With skill, model should apply the 10-minute rule: replace manual installs with docker-compose, add Makefile, suggest devcontainer",
+      "trap": "A documentation edit should expose setup friction without pretending proposed tooling already exists.",
       "assertions": [
         {
           "id": "16.1",
-          "text": "Adds docker-compose.yml to replace manual PostgreSQL and Redis installation"
+          "text": "Improves the supplied CONTRIBUTING instructions using known setup facts."
         },
         {
           "id": "16.2",
-          "text": "Adds a Makefile with targets (make build, make test, make lint, or similar)"
+          "text": "Distinguishes existing commands from proposed Makefile or service orchestration changes."
         },
         {
           "id": "16.3",
-          "text": "Reduces the setup steps to 3 or fewer commands (e.g., clone, docker-compose up, make test)"
+          "text": "Suggests ways to simplify service setup without imposing an arbitrary command count."
         },
         {
           "id": "16.4",
-          "text": "Mentions or suggests devcontainer for consistent environments"
+          "text": "Does not make unrelated infrastructure changes unless the request authorizes them."
         },
         {
           "id": "16.5",
-          "text": "Separates unit tests (fast, no deps) from integration tests (needs PostgreSQL/Redis)"
+          "text": "Explains which checks need PostgreSQL/Redis when supported by the supplied context."
         }
       ]
     },
@@ -450,27 +453,27 @@
       "id": 17,
       "name": "play-link-doc-comment",
       "prompt": "I maintain a public Go library. Write a comprehensive doc comment for this function. I need it to show up well on pkg.go.dev — include everything users need to understand it at a glance:\n\n```go\npackage sliceutil\n\nfunc Filter[T any](s []T, predicate func(T) bool) []T {\n    var result []T\n    for _, v := range s {\n        if predicate(v) {\n            result = append(result, v)\n        }\n    }\n    return result\n}\n```",
-      "trap": "Model may write a thorough doc comment but omit the Play: line entirely — it's a niche convention the skill specifically teaches. The Play: line with its exact format (// Play: https://...) is a skill-specific pattern not commonly known.",
+      "trap": "A comprehensive comment must not contain a fabricated Playground link or unqualified ownership guarantee.",
       "assertions": [
         {
           "id": "17.1",
-          "text": "Includes a `// Play:` line with a URL pointing to a Go Playground demo"
+          "text": "Omits Playground URLs unless a real verified demo is supplied or authorized and created."
         },
         {
           "id": "17.2",
-          "text": "The Play: line uses the exact format `// Play: https://go.dev/play/p/...` (not inline, not as a different label)"
+          "text": "Starts the comment with Filter and explains predicate-based selection."
         },
         {
           "id": "17.3",
-          "text": "Comment starts with 'Filter' followed by a verb phrase"
+          "text": "Explains preservation of input order and that a no-match result is nil."
         },
         {
           "id": "17.4",
-          "text": "Includes an inline code Example section (tab-indented)"
+          "text": "Does not claim a deep copy of referenced elements or purity of the caller-supplied predicate."
         },
         {
           "id": "17.5",
-          "text": "Documents that a new slice is returned (original is not modified)"
+          "text": "Provides a useful local example when appropriate without requiring public publication."
         }
       ]
     },
@@ -510,7 +513,7 @@
       "assertions": [
         {
           "id": "19.1",
-          "text": "Uses ExampleNew or ExampleClient for the constructor example — NOT ExampleNewClient (which stutters) or ExampleNew_client"
+          "text": "Names the constructor example after the actual declared constructor or the type; does not invent or reject a valid constructor name merely for repetition."
         },
         {
           "id": "19.2",
@@ -574,7 +577,215 @@
         },
         {
           "id": "21.3",
-          "text": "Mentions a version or timeline for removal (e.g., 'will be removed in v3.0.0')"
+          "text": "Includes a removal version or timeline only if provided by the user or authoritative project evidence."
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "name": "ripwire-drift-review",
+      "fixture": "fixtures/doc-audit",
+      "prompt": "Review README.md against the code in the supplied repository. Report findings only.",
+      "trap": "Use evidence and preserve the requested scope despite incomplete tool results or misleading documentation.",
+      "assertions": [
+        {
+          "id": "22.1",
+          "text": "Identifies the MaxEntries mismatch: documentation says 99, source defines 8."
+        },
+        {
+          "id": "22.2",
+          "text": "Reports missing.go:12 as a nonexistent source reference."
+        },
+        {
+          "id": "22.3",
+          "text": "Checks the fenced RemovedLookup example separately rather than claiming doc-drift verified it."
+        },
+        {
+          "id": "22.4",
+          "text": "Does not interpret Ripwire exit 0 as a clean documentation verdict."
+        },
+        {
+          "id": "22.5",
+          "text": "Leaves the repository unchanged because this is a review."
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "name": "unsupported-concurrency",
+      "fixture": "fixtures/doc-audit",
+      "prompt": "Audit Cache documentation, especially the concurrent-use claim. Report findings only.",
+      "trap": "Use evidence and preserve the requested scope despite incomplete tool results or misleading documentation.",
+      "assertions": [
+        {
+          "id": "23.1",
+          "text": "Inspects Cache methods and identifies the unsynchronized map reads/writes."
+        },
+        {
+          "id": "23.2",
+          "text": "Flags the concurrent read/write safety claim as unsupported and contradicted by implementation."
+        },
+        {
+          "id": "23.3",
+          "text": "Does not infer intended synchronization guarantees from interface shape or a graph metric."
+        },
+        {
+          "id": "23.4",
+          "text": "Does not add locks or rewrite production behavior during a documentation review."
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "name": "mixed-package-inventory",
+      "fixture": "fixtures/doc-audit",
+      "prompt": "Plan the documentation strategy for this repository and identify exported APIs needing comments.",
+      "trap": "Use evidence and preserve the requested scope despite incomplete tool results or misleading documentation.",
+      "assertions": [
+        {
+          "id": "24.1",
+          "text": "Uses Go package/declaration evidence and recognizes both the library and cachectl command."
+        },
+        {
+          "id": "24.2",
+          "text": "Finds the undocumented exported Reset method even if it has no indexed callers."
+        },
+        {
+          "id": "24.3",
+          "text": "Recommends library examples plus command help/configuration docs."
+        },
+        {
+          "id": "24.4",
+          "text": "Identifies that -key defaults to name rather than the README claim user."
+        },
+        {
+          "id": "24.5",
+          "text": "Does not substitute top-ranked symbols for the complete public API inventory."
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "name": "example-execution",
+      "fixture": "fixtures/doc-audit",
+      "prompt": "Verify the claim that both examples run and check their output. Do not edit the repository.",
+      "trap": "Use evidence and preserve the requested scope despite incomplete tool results or misleading documentation.",
+      "assertions": [
+        {
+          "id": "25.1",
+          "text": "Runs Go examples and observes ExampleLookup execute and pass."
+        },
+        {
+          "id": "25.2",
+          "text": "Identifies ExampleCache_Get as compile-only because it has no output directive."
+        },
+        {
+          "id": "25.3",
+          "text": "Does not treat an affected-test edge or successful compilation as execution proof."
+        },
+        {
+          "id": "25.4",
+          "text": "Reports the mismatch without silently repairing it."
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "name": "go-interface-caveat",
+      "fixture": "fixtures/doc-audit",
+      "prompt": "Check whether *Cache implements Reader, and explain the interface contract using this repository.",
+      "trap": "Use evidence and preserve the requested scope despite incomplete tool results or misleading documentation.",
+      "assertions": [
+        {
+          "id": "26.1",
+          "text": "Reads the Reader declaration and relevant methods."
+        },
+        {
+          "id": "26.2",
+          "text": "Uses Go compilation/type-check evidence, including the compile-time assertion, to establish satisfaction."
+        },
+        {
+          "id": "26.3",
+          "text": "Does not report no implementations solely from a zero Ripwire implementors count."
+        },
+        {
+          "id": "26.4",
+          "text": "Does not invent concurrency or cancellation requirements absent from the contract."
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "name": "ripwire-unavailable",
+      "fixture": "fixtures/doc-audit",
+      "prompt": "Ripwire is not installed in this environment. Review the repository documentation using available Go tools and source reads; do not install anything.",
+      "trap": "Use evidence and preserve the requested scope despite incomplete tool results or misleading documentation.",
+      "assertions": [
+        {
+          "id": "27.1",
+          "text": "Continues with Go tooling and focused source reads rather than blocking."
+        },
+        {
+          "id": "27.2",
+          "text": "Identifies substantive documentation errors in the fixture."
+        },
+        {
+          "id": "27.3",
+          "text": "Does not install Ripwire or alter agent configuration."
+        },
+        {
+          "id": "27.4",
+          "text": "Reports which checks were performed and does not say Ripwire checks passed."
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "name": "incomplete-ripwire-results",
+      "fixture": "fixtures/doc-audit",
+      "prompt": "Audit documentation for the whole fixture. Your initial Ripwire report is capped and omits Reset; its drift summary has unchecked anchors. Complete the audit without assuming those omissions are clean.",
+      "trap": "Use evidence and preserve the requested scope despite incomplete tool results or misleading documentation.",
+      "assertions": [
+        {
+          "id": "28.1",
+          "text": "Uses Go inventory and source to include Reset despite the capped ranking."
+        },
+        {
+          "id": "28.2",
+          "text": "Pages or narrows supported queries only where needed."
+        },
+        {
+          "id": "28.3",
+          "text": "Checks unresolved documentation claims manually and discloses remaining limitations."
+        },
+        {
+          "id": "28.4",
+          "text": "Does not claim a complete audit from an incomplete graph or unchecked anchors."
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "name": "concise-comment-score",
+      "fixture": "fixtures/doc-audit",
+      "prompt": "Review the Get comment. A high comment-coherence score has been reported. Improve the wording only if it helps a caller.",
+      "trap": "Use evidence and preserve the requested scope despite incomplete tool results or misleading documentation.",
+      "assertions": [
+        {
+          "id": "29.1",
+          "text": "Inspects the implementation and recognizes the comment explains the found flag."
+        },
+        {
+          "id": "29.2",
+          "text": "Does not pad the comment merely to reduce a lexical score."
+        },
+        {
+          "id": "29.3",
+          "text": "Does not interpret no_comment as missing exported-documentation coverage."
+        },
+        {
+          "id": "29.4",
+          "text": "Does not invent extra guarantees."
         }
       ]
     }

@@ -1,6 +1,6 @@
 # Library Documentation
 
-→ See `samber/cc-skills-golang@golang-testing` skill for writing effective Example test functions.
+Optional companion, if installed: `samber/cc-skills-golang@golang-testing` skill for writing effective Example test functions.
 
 ## Table of Contents
 
@@ -56,7 +56,7 @@ Add a `Play:` line in the doc comment:
 func Map[T any, U any](s []T, fn func(T) U) []U {
 ```
 
-When a Go Playground integration is available, use it to create and share playground URLs. Otherwise, create them manually at <https://go.dev/play/>.
+The sample URL above is a placeholder, not a published demo. Only add real verified links. Create/share demos when public publication is authorized; otherwise keep the runnable example local.
 
 Guidelines for playground demos:
 
@@ -70,7 +70,7 @@ Guidelines for playground demos:
 
 ## Example Test Functions
 
-Libraries MUST have Example test functions for exported APIs. Example functions are executable documentation. They appear in godoc and are verified by `go test`:
+Add Example functions for useful public-API scenarios. Inspect existing examples and callers before adding more; [Ripwire can help locate them](ripwire.md#write-and-verify-examples). Examples with an output directive execute under `go test`; examples without one only compile:
 
 ```go
 // In map_example_test.go
@@ -79,6 +79,7 @@ package mypackage_test
 
 import (
     "fmt"
+    "strings"
     "github.com/{owner}/{repo}"
 )
 
@@ -107,13 +108,13 @@ Naming conventions:
 - `ExampleFuncName_suffix()` — multiple examples for the same function (suffix is lowercase)
 - `Example()` — example for the whole package
 
-The `// Output:` comment MUST be included for `go test` to verify the example. Without it, the example compiles but doesn't verify output.
+Use `// Output:` for deterministic output, or `// Unordered output:` when order is not part of the contract. An empty `// Output:` also requests execution. Without an output directive the example compiles but does not run. Run `go test -v -run '^Example' -count=1 <packages>` and confirm each intended example name executes; a zero exit status alone is insufficient.
 
 ---
 
 ## Code Examples in Doc Comments
 
-Be generous with examples in doc comments. Show common use cases, edge cases, and error handling:
+Use examples where they clarify distinct scenarios, edge cases, or error handling. Prefer executable Example functions as the maintained source; a fenced or indented snippet is not automatically checked by Go or Ripwire:
 
 ```go
 // NewClient creates a new HTTP client with the given options.
@@ -196,13 +197,13 @@ Follow the [Diataxis framework](https://diataxis.fr/) for organizing documentati
 
 ### llms.txt
 
-Add a `llms.txt` file at the repository root to help AI agents understand your project. Copy the template from [templates/llms.txt](./templates/llms.txt).
+When requested or already part of the project's documentation, use a `llms.txt` file at the repository root to help AI agents navigate maintained docs. Copy the template from [templates/llms.txt](../assets/templates/llms.txt), verify its links and claims, and omit unsupported sections.
 
 This is an emerging convention for making projects AI-friendly. Place it alongside your README.
 
 ### Register for Discoverability
 
-Make your library findable by AI agents and documentation aggregators:
+For public libraries, consider these services when discoverability is requested. Check current service support before recommending or registering; do not publish private source or initiate registration as part of an ordinary docs edit:
 
 - **Context7** — <https://context7.com> — submit your library for inclusion in AI-accessible documentation
 - **DeepWiki** — <https://deepwiki.com> — auto-generates wiki-style docs from GitHub repos
